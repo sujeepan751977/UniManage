@@ -1,0 +1,196 @@
+@model UniManage.Models.Course
+@{
+    ViewBag.Title = Model.CourseCode + ": " + Model.Title;
+    var submittedIds = ViewBag.SubmittedAssignmentIds as List<int> ?? new List<int>();
+    var releasedMaterials = ViewBag.ReleasedMaterials as List<UniManage.Models.CourseMaterial> ?? new List<UniManage.Models.CourseMaterial>();
+    var releasedAssignments = ViewBag.ReleasedAssignments as dynamic; 
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="glass-card border-0 shadow-sm p-4 mb-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="h3 font-weight-bold mb-1">@Model.CourseCode: @Model.Title</h2>
+                <div class="badge badge-soft-info px-3">
+                    <i class="fa-solid fa-users mr-1"></i> Cohort: @ViewBag.StudentBatchCode
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="small text-muted font-weight-bold uppercase">Progress</div>
+                <div class="h4 mb-0 text-primary">@submittedIds.Count / @(releasedAssignments != null ? ((IEnumerable<object>)releasedAssignments).Count() : 0)</div>
+            </div>
+        </div>
+
+        @if (Model.Modules != null && Model.Modules.Any())
+        {
+            foreach (var module in Model.Modules.OrderBy(m => m.ModuleCode))
+            {
+                <div class="card-custom mb-4 overflow-hidden border-0 shadow-sm">
+                    <div class="card-header-custom border-0 bg-light d-flex justify-content-between align-items-center py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="btn-icon bg-white text-primary mr-3 shadow-sm" style="width: 35px; height: 35px;">
+                                <i class="fa-solid fa-layer-group" style="font-size: 14px;"></i>
+                            </div>
+                            <h3 class="h5 font-weight-bold mb-0">@module.ModuleCode: @module.Title</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                         <!-- Module Description -->
+                         @if(!string.IsNullOrEmpty(module.Description)) {
+                            <p class="text-muted small mb-4">@module.Description</p>
+                         }
+
+                        <!-- Materials Subsection -->
+                        <div class="mb-4">
+                            <h5 class="h6 font-weight-bold text-uppercase text-muted border-bottom pb-2 mb-3">
+                                <i class="fa-solid fa-book-open mr-2 text-info"></i> Learning Resources
+                            </h5>
+                            @{
+                                var moduleMaterials = releasedMaterials.Where(m => m.ModuleId == module.ModuleId).ToList();
+                            }
+                            @if (moduleMaterials.Any())
+                            {
+                                <div class="list-group list-group-flush border rounded-lg overflow-hidden shadow-xs">
+                                    @foreach (var m in moduleMaterials)
+                                    {
+                                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 border-light">
+                                            <div class="d-flex align-items-center">
+                                                <div class="mr-3 text-info"><i class="fa-solid fa-file-pdf"></i></div>
+                                                <div>
+                                                    <div class="small font-weight-bold">@m.Title</div>
+                                                    <div class="text-muted" style="font-size: 10px;">@m.FileType.ToUpper() • @((m.FileSize / 1024.0 / 1024.0).ToString("F2")) MB</div>
+                                                </div>
+                                            </div>
+                                            <a href="@Url.Content(m.FilePath)" class="btn btn-sm btn-soft-info" download>
+                                                <i class="fa-solid fa-download"></i>
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4 bg-light rounded text-muted x-small italic border border-dashed text-primary">
+                                    <i class="fa-solid fa-lock mr-1"></i> No resources released for this module yet.
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Assignments Subsection -->
+                        <div>
+                            <h5 class="h6 font-weight-bold text-uppercase text-muted border-bottom pb-2 mb-3">
+                                <i class="fa-solid fa-tasks mr-2 text-primary"></i> Assignments
+                            </h5>
+                            @{
+                                var moduleAssignments = new List<UniManage.Models.AssignmentReleaseVM>();
+                                if (releasedAssignments != null)
+                                {
+                                    foreach (var ra in (List<UniManage.Models.AssignmentReleaseVM>)releasedAssignments)
+                                    {
+                                        if (ra.Assignment.ModuleId == module.ModuleId)
+                                        {
+                                            moduleAssignments.Add(ra);
+                                        }
+                                    }
+                                }
+                            }
+                            @if (moduleAssignments.Any())
+                            {
+                                <div class="list-group list-group-flush border rounded-lg overflow-hidden shadow-xs">
+                                    @foreach (var ra in moduleAssignments)
+                                    {
+                                        var deadline = ra.CustomDeadline ?? ra.Assignment.Deadline;
+                                        <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-3 border-light">
+                                            <div>
+                                                <div class="small font-weight-bold text-dark">@ra.Assignment.Title</div>
+                                                @if (submittedIds.Contains(ra.Assignment.AssignmentId))
+                                                {
+                                                    <span class="badge badge-soft-success x-small mt-1"><i class="fa-solid fa-check mr-1"></i> Completed</span>
+                                                }
+                                                else if (deadline < DateTime.Now)
+                                                {
+                                                    <span class="badge badge-soft-danger x-small mt-1"><i class="fa-solid fa-clock mr-1"></i> Overdue</span>
+                                                }
+                                                else
+                                                {
+                                                    <div class="text-muted mt-1" style="font-size: 11px;">
+                                                        <i class="fa-solid fa-calendar-day mr-1"></i> Due: @deadline.ToString("MMM dd, hh:mm tt")
+                                                    </div>
+                                                }
+                                            </div>
+                                            <a href="@Url.Action("SubmitAssignment", "Student", new { id = ra.Assignment.AssignmentId })" 
+                                               class="btn btn-sm @(submittedIds.Contains(ra.Assignment.AssignmentId) ? "btn-soft-primary" : "btn-primary") px-4 shadow-sm" style="font-size: 11px;">
+                                                @(submittedIds.Contains(ra.Assignment.AssignmentId) ? "Review" : "Open")
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4 bg-light rounded text-muted x-small italic border border-dashed text-primary">
+                                    <i class="fa-solid fa-lock mr-1"></i> No active assignments for your cohort.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="glass-card border-0 shadow-sm mb-4 p-4">
+            <h4 class="h6 font-weight-bold text-uppercase text-muted mb-3">Academic Context</h4>
+            <p class="small text-muted mb-4">You are currently viewing content released specifically to <strong>@ViewBag.StudentBatchCode</strong>.</p>
+            
+            <div class="mb-4">
+                <label class="small font-weight-bold d-block text-muted mb-1">Teaching Staff</label>
+                @foreach (var module in Model.Modules.GroupBy(m => m.ModuleId).Select(g => g.First()))
+                {
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="btn-icon bg-soft-info text-info mr-2 shadow-xs" style="width: 25px; height: 25px; font-size: 10px;">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div class="small">
+                            <span class="font-weight-bold">@module.ModuleCode:</span> 
+                            <span class="text-muted">Faculty Assigned</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-4">
+                <label class="small font-weight-bold d-block text-muted mb-1">Course Details</label>
+                <div class="d-flex gap-2">
+                    <span class="badge badge-light border rounded-pill px-3">@Model.Credits Credits</span>
+                    <span class="badge badge-light border rounded-pill px-3">@Model.CourseCode</span>
+                </div>
+            </div>
+            
+            <a href="@Url.Action("Assignments", "Student")" class="btn btn-primary btn-block rounded-pill shadow-sm">
+                <i class="fa-solid fa-tasks mr-2"></i> My Academic Roadmap
+            </a>
+        </div>
+
+        <div class="alert alert-soft-primary border-0 small">
+            <i class="fa-solid fa-circle-info mr-2"></i>
+            Some materials may only be visible to specific batches. If you are missing content, contact your lecturer.
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.75rem; }
+    .shadow-xs { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .bg-light-soft { background-color: rgba(248, 249, 250, 0.7); }
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .btn-soft-info { background-color: #E0F2FE; color: #0369A1; }
+    .btn-soft-info:hover { background-color: #BAE6FD; }
+</style>

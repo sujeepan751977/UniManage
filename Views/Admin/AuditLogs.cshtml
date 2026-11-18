@@ -1,0 +1,61 @@
+@model IEnumerable<UniManage.Models.AuditLog>
+@{
+    ViewBag.Title = "System Audit Logs";
+}
+
+<div class="card-custom">
+    <div class="card-header-custom border-0 mb-4 pb-0">
+        <div>
+            <h3 class="h4 mb-1">System Audit Trail</h3>
+            <p class="text-muted small">Historical record of all security and data modifications</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-light btn-sm"><i class="fas fa-filter mr-1"></i> Filter</button>
+            <button class="btn btn-light btn-sm"><i class="fas fa-download mr-1"></i> Export CSV</button>
+        </div>
+    </div>
+
+    <div class="table-custom-wrapper">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="thead-light">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>User</th>
+                    <th>Resource</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td class="small text-muted">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>
+                            <span class="badge badge-light border text-uppercase" style="font-size: 10px;">@log.Action</span>
+                        </td>
+                        <td>
+                            @if (log.PerformedBy != null)
+                            {
+                                <div class="font-weight-bold small">@log.PerformedBy.FullName</div>
+                                <div class="text-muted" style="font-size: 10px;">@log.PerformedBy.Email</div>
+                            }
+                            else
+                            {
+                                <span class="text-muted italic small">System / Anonymous</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="small">@log.EntityAffected #@log.EntityId</span>
+                        </td>
+                        <td>
+                            <div class="small text-muted text-truncate" style="max-width: 300px;" title="@log.Details">@log.Details</div>
+                        </td>
+                        <td class="small text-muted">@log.IpAddress</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

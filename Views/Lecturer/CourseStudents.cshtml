@@ -1,0 +1,122 @@
+@model IEnumerable<UniManage.Models.Enrollment>
+@{
+    var course = ViewBag.Course as UniManage.Models.Course;
+    ViewBag.Title = "Course Students - " + (course?.CourseCode ?? "Course");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 hero-animate-up">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-2">
+                <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Lecturer")">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("MyCourses", "Lecturer")">My Courses</a></li>
+                <li class="breadcrumb-item active">@course.CourseCode</li>
+            </ol>
+        </nav>
+        <h1 class="h3 font-weight-bold mb-0">Enrolled Students: @course.Title</h1>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        @using (Html.BeginForm("CourseStudents", "Lecturer", FormMethod.Get, new { @class = "form-inline", id = "batchFilterForm" }))
+        {
+            <input type="hidden" name="id" value="@course.CourseId" />
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text bg-white border-right-0 small font-weight-bold text-muted">Filter Cohort:</span>
+                </div>
+                <select name="batchId" class="form-control border-left-0 small font-weight-500" onchange="document.getElementById('batchFilterForm').submit();">
+                    <option value="">All Students</option>
+                    @foreach (var bt in ViewBag.Batches as IEnumerable<UniManage.Models.Batch>)
+                    {
+                        <option value="@bt.BatchId" @(ViewBag.SelectedBatchId == bt.BatchId ? "selected" : "")>@bt.BatchCode (@bt.BatchName)</option>
+                    }
+                </select>
+            </div>
+        }
+        <span class="badge badge-pill badge-primary py-2 px-3">@Model.Count() Students</span>
+    </div>
+</div>
+
+<div class="card-custom hero-animate-up" style="animation-delay: 0.1s;">
+    <div class="table-custom-wrapper">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Email Address</th>
+                    <th>Batch</th>
+                    <th>Joined At</th>
+                    <th>Course Grade</th>
+                    <th class="text-right">Status</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-users fa-3x mb-3 opacity-25"></i>
+                            <p>No students enrolled in this course yet.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var enrollment in Model)
+                    {
+                        var batch = enrollment.BatchEnrollments?.FirstOrDefault()?.Batch;
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm mr-3" style="background-color: var(--primary-light); color: var(--primary);">
+                                        @enrollment.Student.FullName.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <span class="font-weight-bold">@enrollment.Student.FullName</span>
+                                </div>
+                            </td>
+                            <td class="small text-muted">@enrollment.Student.Email</td>
+                            <td>
+                                @if (batch != null)
+                                {
+                                    <span class="badge badge-pill badge-soft-primary border" title="Batch: @batch.BatchName">
+                                        <i class="fa-solid fa-layer-group mr-1"></i> @batch.BatchCode
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small italic">Not Assigned</span>
+                                }
+                            </td>
+                            <td class="small text-muted">@enrollment.EnrolledAt.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                @if (enrollment.FinalGrade.HasValue)
+                                {
+                                    <span class="font-weight-bold text-success">@enrollment.FinalGrade.Value.ToString("0.##")%</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted italic small">Not graded</span>
+                                }
+                            </td>
+                            <td class="text-right">
+                                @if (enrollment.Status == UniManage.Models.EnrollmentStatus.Active)
+                                {
+                                    <span class="badge badge-pill badge-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-pill badge-light">@enrollment.Status</span>
+                                }
+                            </td>
+                            <td class="text-right">
+                                <a href="mailto:@enrollment.Student.Email" class="btn btn-light btn-sm text-primary" title="Message Student">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

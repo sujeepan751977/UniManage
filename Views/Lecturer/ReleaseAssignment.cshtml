@@ -1,0 +1,89 @@
+@model UniManage.Models.ReleaseAssignmentViewModel
+
+@{
+    ViewBag.Title = "Release Assignment";
+}
+
+<div class="row mb-5">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="glass-card border-0 shadow-lg p-0 overflow-hidden">
+            <div class="bg-primary p-4 text-white">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="btn-icon bg-white text-primary mr-3 shadow-sm">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <h4 class="font-weight-bold m-0 text-white">Release Assignment: @Model.Title</h4>
+                </div>
+                <p class="m-0 opacity-75 small">
+                    <i class="fa-solid fa-graduation-cap mr-1"></i> Course: @Model.CourseTitle | 
+                    <i class="fa-solid fa-clock mr-1"></i> Standard Deadline: @Model.Deadline.ToLongDateString()
+                </p>
+            </div>
+
+            @using (Html.BeginForm("ReleaseAssignment", "Lecturer", FormMethod.Post, new { @class = "p-4" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.AssignmentId)
+
+                <h6 class="font-weight-bold mb-4 text-dark border-bottom pb-2">Select Target Cohorts</h6>
+
+                <div class="row">
+                    @for (int i = 0; i < Model.BatchOptions.Count; i++)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <div class="batch-release-card p-3 border rounded shadow-sm @(Model.BatchOptions[i].IsAlreadyReleased ? "bg-light border-success" : "")">
+                                <div class="custom-control custom-checkbox mb-2">
+                                    <input type="checkbox" class="custom-control-input" 
+                                           id="batch_@Model.BatchOptions[i].BatchId" 
+                                           name="SelectedBatchIds" 
+                                           value="@Model.BatchOptions[i].BatchId"
+                                           @(Model.BatchOptions[i].IsAlreadyReleased ? "checked disabled" : "")>
+                                    <label class="custom-control-label h6 font-weight-bold" for="batch_@Model.BatchOptions[i].BatchId">
+                                        @Model.BatchOptions[i].BatchCode
+                                    </label>
+                                </div>
+                                <div class="pl-4 small text-muted mb-3">
+                                    @Model.BatchOptions[i].BatchName
+                                    @if (Model.BatchOptions[i].IsAlreadyReleased)
+                                    {
+                                        <span class="text-success font-weight-bold d-block"><i class="fa-solid fa-check-circle mr-1"></i> Already Released</span>
+                                    }
+                                </div>
+
+                                <div class="form-group pl-4 mb-0">
+                                    <label class="x-small font-weight-bold text-uppercase text-muted">Custom Deadline (Optional)</label>
+                                    <input type="hidden" name="CustomDeadlines[@i].BatchId" value="@Model.BatchOptions[i].BatchId" />
+                                    <input type="date" name="CustomDeadlines[@i].Deadline" 
+                                           class="form-control form-control-sm" 
+                                           value="@(Model.BatchOptions[i].ExistingCustomDeadline?.ToString("yyyy-MM-dd") ?? "")"
+                                           @(Model.BatchOptions[i].IsAlreadyReleased ? "disabled" : "") />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="alert alert-soft-primary mt-4 py-3 px-4 border-0 rounded-pill">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-circle-info mr-3"></i>
+                        <p class="m-0 small">Released assignments become immediately visible to all students in the selected batches. You can set individual deadlines if some cohorts need extension. If left blank, the global deadline applies.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="@Url.Action("ManageReleases", "Lecturer", new { id = Context.Request.QueryString["courseId"] })" class="btn btn-light btn-pill px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-pill px-5 shadow text-white font-weight-bold">
+                        <i class="fa-solid fa-check-circle mr-2"></i> Confirm Release
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .batch-release-card { transition: all 0.2s ease; border: 1px solid #e2e8f0; }
+    .batch-release-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .x-small { font-size: 0.7rem; }
+    .btn-pill { border-radius: 50px; }
+</style>

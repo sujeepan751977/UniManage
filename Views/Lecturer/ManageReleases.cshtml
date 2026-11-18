@@ -1,0 +1,191 @@
+@model UniManage.Models.ManageReleasesViewModel
+
+@{
+    ViewBag.Title = "Manage Content Releases";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card border-0 shadow-sm p-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="btn-icon bg-soft-info text-info mr-3">
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
+                <div>
+                    <h4 class="font-weight-bold mb-1">Content Release Matrix</h4>
+                    <p class="text-muted small m-0">
+                        <span class="mr-3"><i class="fa-solid fa-graduation-cap mr-1"></i> Course: @Model.CourseCode - @Model.CourseTitle</span>
+                        <span><i class="fa-solid fa-layer-group mr-1"></i> Managing for @Model.Batches.Count Batches</span>
+                    </p>
+                </div>
+            </div>
+            <div>
+                <a href="@Url.Action("Dashboard", "Lecturer")" class="btn btn-light btn-pill px-4">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assignments Release Table -->
+<div class="glass-card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-dark"><i class="fa-solid fa-file-signature text-primary mr-2"></i> Assignments Visibility</h6>
+        <span class="badge badge-soft-primary px-3">Batch-Specific Deadlines Supported</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th style="min-width: 250px;">Assignment Title</th>
+                    @foreach (var batch in Model.Batches)
+                    {
+                        <th class="text-center">@batch.BatchCode</th>
+                    }
+                    <th class="text-right">Global Deadline</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var assignment in Model.Assignments)
+                {
+                    <tr>
+                        <td>
+                            <div class="font-weight-bold">@assignment.Title</div>
+                            <div class="small">
+                                <a href="@Url.Action("ReleaseAssignment", "Lecturer", new { id = assignment.AssignmentId })" class="text-primary font-weight-bold">
+                                    <i class="fa-solid fa-plus-circle mr-1"></i> Release to More
+                                </a>
+                            </div>
+                        </td>
+                        @foreach (var batch in Model.Batches)
+                        {
+                            var release = assignment.ReleaseInfo.FirstOrDefault(r => r.BatchId == batch.BatchId);
+                            <td class="text-center">
+                                @if (release != null && release.IsReleased)
+                                {
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-success px-3 rounded-pill" onclick="unreleaseAssignment(@assignment.AssignmentId, @batch.BatchId, '@assignment.Title', '@batch.BatchCode')">
+                                            <i class="fa-solid fa-eye mr-1"></i> Visible
+                                        </button>
+                                    </div>
+                                    if (release.CustomDeadline.HasValue)
+                                    {
+                                        <div class="x-small text-danger font-weight-bold mt-1">
+                                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> @release.CustomDeadline.Value.ToShortDateString()
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill opacity-50" onclick="location.href='@Url.Action("ReleaseAssignment", "Lecturer", new { id = assignment.AssignmentId })'">
+                                        <i class="fa-solid fa-eye-slash mr-1"></i> Hidden
+                                    </button>
+                                }
+                            </td>
+                        }
+                        <td class="text-right small text-muted">@assignment.Deadline.ToShortDateString()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Materials Release Table -->
+<div class="glass-card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="card-header bg-white py-3 border-0">
+        <h6 class="m-0 font-weight-bold text-dark"><i class="fa-solid fa-book-open text-info mr-2"></i> Course Materials Visibility</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th style="min-width: 250px;">Material Item</th>
+                    @foreach (var batch in Model.Batches)
+                    {
+                        <th class="text-center">@batch.BatchCode</th>
+                    }
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var material in Model.Materials)
+                {
+                    <tr>
+                        <td class="font-weight-bold">@material.Title</td>
+                        @foreach (var batch in Model.Batches)
+                        {
+                            var release = material.ReleaseInfo.FirstOrDefault(r => r.BatchId == batch.BatchId);
+                            <td class="text-center">
+                                @if (release != null && release.IsReleased)
+                                {
+                                    <button class="btn btn-sm btn-info px-3 rounded-pill" onclick="unreleaseMaterial(@material.MaterialId, @batch.BatchId, '@material.Title', '@batch.BatchCode')">
+                                        <i class="fa-solid fa-check-circle mr-1"></i> Released
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill opacity-50" onclick="location.href='@Url.Action("ReleaseMaterial", "Lecturer", new { id = material.MaterialId })'">
+                                        <i class="fa-solid fa-share mr-1"></i> Release
+                                    </button>
+                                }
+                            </td>
+                        }
+                        <td class="text-right">
+                            <a href="@Url.Action("ReleaseMaterial", "Lecturer", new { id = material.MaterialId })" class="btn btn-sm btn-soft-primary btn-icon">
+                                <i class="fa-solid fa-plus-circle"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function unreleaseAssignment(aId, bId, aTitle, bCode) {
+            Swal.fire({
+                title: 'Hide Assignment?',
+                text: `Hide "${aTitle}" from batch ${bCode}? Students will no longer see or be able to submit this assignment.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                confirmButtonText: 'Yes, hide it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("UnreleaseAssignment", "Lecturer")', { 
+                        assignmentId: aId, 
+                        batchId: bId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                    }, function() {
+                        location.reload();
+                    });
+                }
+            });
+        }
+
+        function unreleaseMaterial(mId, bId, mTitle, bCode) {
+            Swal.fire({
+                title: 'Unrelease Material?',
+                text: `Remove "${mTitle}" from batch ${bCode}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                confirmButtonText: 'Yes, remove'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("UnreleaseMaterial", "Lecturer")', { 
+                        materialId: mId, 
+                        batchId: bId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                    }, function() {
+                        location.reload();
+                    });
+                }
+            });
+        }
+    </script>
+}
+
+@Html.AntiForgeryToken()

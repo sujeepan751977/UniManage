@@ -1,0 +1,147 @@
+@model IEnumerable<UniManage.Models.Submission>
+@{
+    ViewBag.Title = "My Academic Grades";
+    var gpa = Model.Any() ? Model.Average(s => (s.Grade / s.Assignment.MaxMarks) * 100) : 0;
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card-custom stat-card border-0" style="background-color: var(--primary); color: white;">
+            <div class="stat-label text-white opacity-75">Cumulative GPA</div>
+            <div class="stat-value text-white">@((gpa / 25).Value.ToString("F2")) / 4.0</div>
+            <div class="stat-trend text-white opacity-75">Weighted avg: @(gpa.Value.ToString("F1"))%</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom stat-card">
+            <div class="stat-label">Total Graded</div>
+            <div class="stat-value text-dark">@Model.Count() <span class="h5 text-muted">Assignments</span></div>
+            <div class="stat-trend trend-up">Current Semester</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom stat-card">
+            <div class="stat-label">Highest Grade</div>
+            <div class="stat-value text-success">@(Model.Any() ? Model.Max(s => (s.Grade / s.Assignment.MaxMarks) * 100)?.ToString("F1") : "0")%</div>
+            <div class="stat-trend trend-up">In @(Model.OrderByDescending(s => (s.Grade / s.Assignment.MaxMarks)).FirstOrDefault()?.Assignment.Module.Course.CourseCode ?? "N/A")</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-custom mb-4">
+    <div class="card-header-custom">
+        <h3 class="h4 mb-0">Performance Trend</h3>
+    </div>
+    <div style="height: 300px;">
+        <canvas id="gradesChart"></canvas>
+    </div>
+</div>
+
+<div class="card-custom">
+    <div class="card-header-custom">
+        <h3 class="h4 mb-0">Grade Breakdown</h3>
+    </div>
+    
+    @if (Model.Any())
+    {
+        <div class="table-custom-wrapper">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Course</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Feedback</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        var percentage = (s.Grade / s.Assignment.MaxMarks) * 100;
+                        <tr>
+                            <td>
+                                <div class="font-weight-bold">@s.Assignment.Title</div>
+                                <div class="small text-muted">Submitted @s.SubmittedAt.ToString("MMM dd, yyyy")</div>
+                            </td>
+                            <td><span class="badge badge-light border">@s.Assignment.Module.Course.CourseCode</span></td>
+                            <td>
+                                <div class="font-weight-bold text-dark">@s.Grade / @s.Assignment.MaxMarks</div>
+                                <div class="progress" style="height: 4px; width: 100px;">
+                                    <div class="progress-bar @(percentage >= 80 ? "bg-success" : (percentage >= 50 ? "bg-primary" : "bg-danger"))" style="width: @percentage%"></div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (s.IsLate)
+                                {
+                                    <span class="badge badge-pill rounded-circle p-1 status-danger" title="Late Submission"><i class="fa-solid fa-clock"></i></span>
+                                }
+                                <span class="badge badge-pill status-completed">Graded</span>
+                            </td>
+                            <td>
+                                <div class="small text-muted text-truncate" style="max-width: 200px;">
+                                    @(string.IsNullOrEmpty(s.Feedback) ? "No feedback" : s.Feedback)
+                                </div>
+                            </td>
+                            <td class="text-right">
+                                <a href="@Url.Action("SubmitAssignment", "Student", new { id = s.AssignmentId })" class="btn btn-light btn-sm">
+                                    <i class="fa-solid fa-eye text-primary"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        @Html.Partial("_EmptyState", new { Heading = "No grades yet", Subtext = "As soon as your instructors grade your submissions, they will appear here." })
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            var ctx = document.getElementById('gradesChart').getContext('2d');
+            var gradesData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.OrderBy(s => s.GradedAt).Select(s => new { 
+                label = s.Assignment.Title, 
+                value = (s.Grade / s.Assignment.MaxMarks) * 100 
+            })));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: gradesData.map(d => d.label),
+                    datasets: [{
+                        label: 'Grade Percentage',
+                        data: gradesData.map(d => d.value),
+                        borderColor: '#4F46E5',
+                        backgroundColor: 'rgba(79,70,229,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#4F46E5',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { borderDash: [5, 5] }
+                        },
+                        x: { display: false }
+                    }
+                }
+            });
+        });
+    </script>
+}

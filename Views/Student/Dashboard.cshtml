@@ -1,0 +1,166 @@
+@model UniManage.ViewModels.Student.StudentDashboardViewModel
+@{
+    ViewBag.Title = "Student Dashboard";
+}
+
+<!-- Welcome Banner -->
+<div class="card-custom border-0" style="background-color: var(--primary-light); border-left: 6px solid var(--primary) !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="h3 mb-1">Good morning, @User.Identity.Name!</h2>
+            <p class="text-muted mb-0">Today is @DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+        </div>
+        <div class="d-none d-md-block">
+            <i class="fa-solid fa-sun fa-3x text-warning opacity-50"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card-custom stat-card">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="stat-icon"><i class="fa-solid fa-book-open"></i></div>
+                <div class="text-right">
+                    <div class="stat-label">Enrolled Courses</div>
+                    <div class="stat-value">@Model.TotalEnrolled</div>
+                </div>
+            </div>
+            <div class="stat-trend trend-up">
+                <i class="fa-solid fa-arrow-up"></i> 12% vs last month
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-custom stat-card">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="stat-icon" style="background-color: #FEF3C7; color: #F59E0B;"><i class="fa-solid fa-clock"></i></div>
+                <div class="text-right">
+                    <div class="stat-label">Assignments Due</div>
+                    <div class="stat-value">@Model.UpcomingDeadlines.Count(d => !d.IsSubmitted)</div>
+                </div>
+            </div>
+            <div class="stat-trend trend-down">
+                <i class="fa-solid fa-arrow-down"></i> 2 new today
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <a href="@Url.Action("Inbox", "Messages")" class="text-decoration-none">
+            <div class="card-custom stat-card h-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="stat-icon" style="background-color: #EFF6FF; color: #3B82F6;"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="text-right">
+                        <div class="stat-label">Unread Messages</div>
+                        <div class="stat-value">@Model.MessagesUnread</div>
+                    </div>
+                </div>
+                <div class="stat-trend trend-up">
+                    <i class="fa-solid fa-arrow-up"></i> 4 received today
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <div class="card-custom stat-card">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="stat-icon" style="background-color: #D1FAE5; color: #10B981;"><i class="fa-solid fa-star"></i></div>
+                <div class="text-right">
+                    <div class="stat-label">Average Grade</div>
+                    <div class="stat-value">@Model.AverageGrade%</div>
+                </div>
+            </div>
+            <div class="stat-trend trend-up">
+                <i class="fa-solid fa-arrow-up"></i> 5% vs last semester
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Upcoming Deadlines -->
+    <div class="col-lg-7">
+        <div class="card-custom h-100">
+            <div class="card-header-custom">
+                <h3 class="h4 mb-0">Upcoming Deadlines</h3>
+                <a href="@Url.Action("Assignments", "Student")" class="small font-weight-bold text-primary">View All</a>
+            </div>
+            
+            @if (Model.UpcomingDeadlines.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var item in Model.UpcomingDeadlines)
+                    {
+                        <div class="list-group-item px-0 py-3 border-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="h6 mb-1 font-weight-bold">@item.AssignmentTitle</h4>
+                                <p class="text-muted small mb-0">@item.CourseTitle</p>
+                            </div>
+                            <div class="text-right">
+                                @if (item.IsSubmitted)
+                                {
+                                    <span class="badge badge-pill status-completed">Submitted</span>
+                                }
+                                else
+                                {
+                                    var badgeClass = item.DaysRemaining < 3 ? "status-danger" : (item.DaysRemaining < 7 ? "status-warning" : "status-pending");
+                                    <span class="badge badge-pill @badgeClass">@item.DaysRemaining days left</span>
+                                }
+                                <div class="small text-muted mt-1">@item.Deadline.ToString("MMM dd")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                @Html.Partial("_EmptyState", new { Heading = "No upcoming deadlines", Subtext = "Enjoy your free time! There are no assignments due soon." })
+            }
+        </div>
+    </div>
+
+    <!-- Quick Links & Recent Grades -->
+    <div class="col-lg-5">
+        <div class="card-custom mb-4">
+            <div class="card-header-custom">
+                <h3 class="h4 mb-0">Recent Grades</h3>
+            </div>
+            @if (Model.RecentGrades.Any())
+            {
+                foreach (var grade in Model.RecentGrades)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="font-weight-bold small">@grade.AssignmentTitle</div>
+                            <div class="text-muted small">@grade.CourseTitle</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="badge @(grade.Percentage >= 80 ? "badge-success" : (grade.Percentage >= 60 ? "badge-primary" : "badge-danger"))">@grade.Grade/@grade.MaxMarks</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted small text-center my-4">No graded items yet.</p>
+            }
+        </div>
+
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <h3 class="h4 mb-0">Quick Actions</h3>
+            </div>
+            <div class="d-grid gap-2">
+                <a href="@Url.Action("BrowseCourses", "Student")" class="btn btn-primary btn-block text-left mb-2 d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-search mr-2"></i> Browse Courses</span>
+                    <i class="fa-solid fa-chevron-right small"></i>
+                </a>
+                <a href="@Url.Action("MyCourses", "Student")" class="btn btn-secondary btn-block text-left d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-book mr-2"></i> My Enrolled Courses</span>
+                    <i class="fa-solid fa-chevron-right small"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

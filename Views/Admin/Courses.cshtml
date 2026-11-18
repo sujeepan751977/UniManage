@@ -1,0 +1,74 @@
+@model IEnumerable<UniManage.Models.Course>
+@{
+    ViewBag.Title = "Course Inventory";
+}
+
+<div class="card-custom">
+    <div class="card-header-custom border-0 mb-4 pb-0 d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="h4 mb-1">Managed Courses</h3>
+            <p class="text-muted small">Global course catalog and lecturer assignments</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            @using (Html.BeginForm("Courses", "Admin", FormMethod.Get, new { @class = "form-inline d-none d-md-flex mr-3" }))
+            {
+                <div class="input-group input-group-sm">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search title or code..." value="@ViewBag.SearchTerm">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-outline-secondary"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            }
+            <a href="@Url.Action("CreateCourse")" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus mr-1"></i> New Course
+            </a>
+        </div>
+    </div>
+
+    <div class="table-custom-wrapper">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Title</th>
+                    <th>Modules</th>
+                    <th>Credits</th>
+                    <th>Enrollment</th>
+                    <th>Status</th>
+                    <th class="text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var course in Model)
+                {
+                    <tr>
+                        <td><span class="font-weight-bold">@course.CourseCode</span></td>
+                        <td>@course.Title</td>
+                        <td>
+                            <a href="@Url.Action("Modules", new { id = course.CourseId })" class="text-primary font-weight-bold">@course.Modules.Count Modules</a>
+                        </td>
+                        <td>@course.Credits</td>
+                        <td>
+                            <div class="small text-muted">@course.Enrollments.Count / @course.MaxEnrollment</div>
+                            <div class="progress" style="height: 4px;">
+                                @{
+                                    var percent = (course.MaxEnrollment > 0) ? ((double)course.Enrollments.Count / course.MaxEnrollment) * 100 : 0;
+                                    var widthStyle = $"width: {percent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}%;";
+                                }
+                                <div class="progress-bar @(percent >= 90 ? "bg-danger" : percent >= 70 ? "bg-warning" : "bg-success")" style="@widthStyle"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-pill @(course.Status == UniManage.Models.CourseStatus.Active ? "status-active" : (course.Status == UniManage.Models.CourseStatus.Archived ? "status-dropped" : "status-pending"))">@course.Status</span>
+                        </td>
+                        <td class="text-right">
+                             <div class="btn-group">
+                                <a href="@Url.Action("EditCourse", new { id = course.CourseId })" class="btn btn-light btn-sm" title="Edit"><i class="fas fa-edit text-primary"></i></a>
+                             </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

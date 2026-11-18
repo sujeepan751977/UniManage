@@ -1,0 +1,11 @@
+.vs/
+bin/
+obj/
+packages/
+App_Data/
+Uploads/
+*.user
+*.suo
+*.db
+*.pdb
+*.log

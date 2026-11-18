@@ -1,0 +1,67 @@
+@model UniManage.ViewModels.Account.LoginViewModel
+@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+}
+
+<div class="auth-card">
+    <div class="text-center mb-4">
+        <i class="fa-solid fa-graduation-cap fa-3x text-primary mb-2"></i>
+        <h1 class="h2 font-weight-bold text-dark">UniManage</h1>
+        <p class="text-muted">Sign in to your account</p>
+    </div>
+
+    @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3 font-weight-bold" })
+
+        <div class="form-group">
+            <label for="Email">Email Address</label>
+            <div class="position-relative">
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control pl-5", placeholder = "name@university.edu" })
+                <i class="fa-solid fa-envelope position-absolute text-muted" style="left: 16px; top: 12px;"></i>
+            </div>
+            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+        </div>
+
+        <div class="form-group mb-4">
+            <div class="d-flex justify-content-between">
+                <label for="Password">Password</label>
+                <a href="#" class="small text-primary font-weight-bold">Forgot?</a>
+            </div>
+            <div class="position-relative">
+                @Html.PasswordFor(m => m.Password, new { @class = "form-control pl-5", placeholder = "********", id = "Password" })
+                <i class="fa-solid fa-lock position-absolute text-muted" style="left: 16px; top: 12px;"></i>
+                <i class="fa-solid fa-eye position-absolute text-muted pointer" id="togglePassword" style="right: 16px; top: 12px;"></i>
+            </div>
+            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+        </div>
+
+        <div class="form-group custom-control custom-checkbox mb-4">
+            @Html.CheckBoxFor(m => m.RememberMe, new { @class = "custom-control-input", id = "rememberMe" })
+            <label class="custom-control-label small" for="rememberMe">Keep me signed in</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block py-2 mb-4">
+            Sign In
+        </button>
+
+        <div class="text-center">
+            <p class="mb-0 text-muted small">Don't have an account? <a href="@Url.Action("Register", "Account")" class="text-primary font-weight-bold">Register</a></p>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            $("#togglePassword").on("click", function() {
+                var passInput = $("#Password");
+                var type = passInput.attr("type") === "password" ? "text" : "password";
+                passInput.attr("type", type);
+                $(this).toggleClass("fa-eye fa-eye-slash");
+            });
+        });
+    </script>
+}

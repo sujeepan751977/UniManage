@@ -1,0 +1,215 @@
+@model UniManage.ViewModels.Admin.AdminDashboardViewModel
+@{
+    ViewBag.Title = "System Administration";
+}
+
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-custom py-2 border-left-primary h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Students</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalStudents</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-custom py-2 border-left-success h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Lecturers</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalLecturers</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-custom py-2 border-left-info h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Active Courses</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalCourses</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-book fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="@Url.Action("PendingEnrollments", "Admin")" class="text-decoration-none h-100">
+            <div class="card-custom py-2 border-left-warning h-100 transition-hover">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Approvals</div>
+                            @{
+                                var pendingCount = Html.Action("SidebarStats", "Admin");
+                            }
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@pendingCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-warning opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card-custom shadow mb-4">
+            <div class="card-header-custom py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Global Enrollment Trends</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="height: 320px;">
+                    <canvas id="enrollmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom shadow mb-4">
+            <div class="card-header-custom py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Course Distribution</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-pie pt-4 pb-2" style="height: 250px;">
+                            <canvas id="coursePieChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6 pt-4">
+                        <div class="mt-4 text-center small">
+                            <span class="mr-2"><i class="fas fa-circle text-primary"></i> Computing</span>
+                            <span class="mr-2"><i class="fas fa-circle text-success"></i> Engineering</span>
+                            <span class="mr-2"><i class="fas fa-circle text-info"></i> Business</span>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-muted small">The distribution shows a strong focus on technical departments this semester.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card-custom shadow mb-4">
+            <div class="card-header-custom py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">System Audit Feed</h6>
+                <a href="@Url.Action("AuditLogs")" class="small">View Logs</a>
+            </div>
+            <div class="card-body">
+                <div class="timeline-small">
+                    @foreach (var audit in Model.RecentAudits)
+                    {
+                        <div class="border-left-primary pl-3 mb-4 position-relative">
+                            <div class="position-absolute" style="left: -5px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--primary);"></div>
+                            <div class="small text-muted">@audit.Timestamp.ToString("MMM dd, HH:mm")</div>
+                            <div class="font-weight-bold small text-dark">@audit.Action</div>
+                            <div class="small text-muted">@audit.User: @audit.Details</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom shadow mb-4">
+            <div class="card-header-custom py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Settings</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="@Url.Action("Users")" class="list-group-item list-group-item-action border-0 px-4 py-3">
+                        <i class="fas fa-users-cog mr-3 text-primary"></i> Manage Staff & Students
+                    </a>
+                    <a href="@Url.Action("Courses")" class="list-group-item list-group-item-action border-0 px-4 py-3">
+                        <i class="fas fa-book-open mr-3 text-success"></i> Course Inventory
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action border-0 px-4 py-3">
+                        <i class="fas fa-cog mr-3 text-warning"></i> Maintenance Mode
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            // Enrollment Area Chart
+            var ctx = document.getElementById("enrollmentChart");
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                    datasets: [{
+                        label: "Enrollments",
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(78, 115, 223, 0.05)",
+                        borderColor: "rgba(78, 115, 223, 1)",
+                        pointRadius: 3,
+                        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                        pointBorderColor: "rgba(78, 115, 223, 1)",
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        data: [0, 10, 5, 15, 10, 20, 15, 25, 20, 30, 25, 40],
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    layout: { padding: { left: 10, right: 25, top: 25, bottom: 0 } },
+                    scales: {
+                        x: { grid: { display: false, drawBorder: false } },
+                        y: { ticks: { maxTicksLimit: 5, padding: 10 } },
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Course Pie Chart
+            var ctxPie = document.getElementById("coursePieChart");
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ["Computing", "Engineering", "Business"],
+                    datasets: [{
+                        data: [55, 30, 15],
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+                        hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '80%',
+                },
+            });
+        });
+    </script>
+}

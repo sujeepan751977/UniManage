@@ -1,0 +1,62 @@
+@model UniManage.Models.Course
+@{
+    ViewBag.Title = "Edit Course";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-custom">
+            <div class="card-header-custom border-0 mb-4">
+                <h3 class="h4 mb-0">Edit Course: @Model.Title</h3>
+            </div>
+
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.CourseId)
+                @Html.HiddenFor(m => m.CreatedById)
+                
+                @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+                <div class="row">
+                    <div class="col-md-4 form-group">
+                        <label class="font-weight-bold">Course Code</label>
+                        @Html.TextBoxFor(m => m.CourseCode, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.CourseCode, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="col-md-8 form-group">
+                        <label class="font-weight-bold">Course Title</label>
+                        @Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger small" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-bold">Description</label>
+                    @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
+                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-4 form-group">
+                        <label class="font-weight-bold">Credits</label>
+                        @Html.TextBoxFor(m => m.Credits, new { @class = "form-control", type = "number", min = "1", max = "10" })
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label class="font-weight-bold">Max Enrollment</label>
+                        @Html.TextBoxFor(m => m.MaxEnrollment, new { @class = "form-control", type = "number", min = "1" })
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label class="font-weight-bold">Status</label>
+                        @Html.EnumDropDownListFor(m => m.Status, new { @class = "form-control" })
+                    </div>
+                </div>
+
+                <div class="form-group border-top pt-4 text-right">
+                    <a href="@Url.Action("Courses")" class="btn btn-light mr-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

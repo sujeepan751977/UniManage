@@ -1,0 +1,75 @@
+@model IEnumerable<UniManage.Models.Submission>
+@{
+    var assignment = ViewBag.Assignment as UniManage.Models.Assignment;
+    ViewBag.Title = "Submissions: " + assignment.Title;
+}
+
+<div class="card-custom mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="h4 mb-1">Assignment Submissions</h3>
+            <p class="text-muted small mb-0">Reviewing @assignment.Title (@assignment.Module.Course.CourseCode)</p>
+        </div>
+        <div class="text-right">
+            <span class="badge badge-light border">@Model.Count() Submissions</span>
+            <span class="badge badge-light border">@Model.Count(s => !s.Grade.HasValue) Ungraded</span>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-custom-wrapper">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Submitted At</th>
+                        <th>Status</th>
+                        <th>Grade</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="font-weight-bold text-dark">@s.Student.FullName</div>
+                                <div class="small text-muted">@s.Student.Email</div>
+                            </td>
+                            <td>
+                                <div class="small">@s.SubmittedAt.ToString("MMM dd, hh:mm tt")</div>
+                                @if (s.IsLate)
+                                {
+                                    <span class="badge badge-pill status-danger" style="font-size: 10px;">LATE</span>
+                                }
+                            </td>
+                            <td>
+                                @if (s.Grade.HasValue)
+                                {
+                                    <span class="badge badge-pill status-completed">Graded</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-pill status-pending text-warning border-warning">Ungraded</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="font-weight-bold">@(s.Grade.HasValue ? s.Grade.ToString() + " / " + assignment.MaxMarks : "-")</div>
+                            </td>
+                            <td class="text-right">
+                                <a href="@Url.Action("GradeSubmission", new { id = s.SubmissionId })" class="btn btn-primary btn-sm px-3">
+                                    @(s.Grade.HasValue ? "Review" : "Grade")
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        @Html.Partial("_EmptyState", new { Heading = "No submissions yet", Subtext = "Wait for students to upload their work for this assignment." })
+    }
+</div>

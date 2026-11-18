@@ -1,0 +1,88 @@
+@model UniManage.ViewModels.Messaging.InboxViewModel
+@{
+    ViewBag.Title = "Message Center";
+}
+
+<div class="row">
+    <div class="col-lg-3">
+        <a href="@Url.Action("Compose")" class="btn btn-primary btn-block py-2 mb-4">
+            <i class="fa-solid fa-pen-to-square mr-2"></i> Compose
+        </a>
+        
+        <div class="card-custom p-0 overflow-hidden mb-4">
+            <div class="list-group list-group-flush">
+                <a href="@Url.Action("Inbox", new { folder = "Inbox" })" class="list-group-item list-group-item-action @(Model.CurrentFolder.ToLower() == "inbox" ? "active" : "") border-0">
+                    <i class="fa-solid fa-inbox mr-3"></i> Inbox
+                    @if (Model.UnreadCount > 0)
+                    {
+                        <span class="badge badge-pill badge-light float-right mt-1">@Model.UnreadCount</span>
+                    }
+                </a>
+                <a href="@Url.Action("Inbox", new { folder = "Sent" })" class="list-group-item list-group-item-action @(Model.CurrentFolder.ToLower() == "sent" ? "active" : "") border-0">
+                    <i class="fa-solid fa-paper-plane mr-3"></i> Sent
+                </a>
+                <a href="@Url.Action("Inbox", new { folder = "Starred" })" class="list-group-item list-group-item-action @(Model.CurrentFolder.ToLower() == "starred" ? "active" : "") border-0">
+                    <i class="fa-solid fa-star mr-3"></i> Starred
+                </a>
+                <a href="@Url.Action("Inbox", new { folder = "Trash" })" class="list-group-item list-group-item-action @(Model.CurrentFolder.ToLower() == "trash" ? "active" : "") border-0 text-danger">
+                    <i class="fa-solid fa-trash-can mr-3"></i> Trash
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        <div class="card-custom p-0 overflow-hidden">
+            <div class="card-header-custom bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                <h3 class="h5 mb-0 font-weight-bold">
+                    <i class="fa-solid @(Model.CurrentFolder.ToLower() == "sent" ? "fa-paper-plane" : Model.CurrentFolder.ToLower() == "trash" ? "fa-trash-can" : Model.CurrentFolder.ToLower() == "starred" ? "fa-star" : "fa-inbox") mr-2 text-primary"></i>
+                    @Model.CurrentFolder
+                </h3>
+                <div class="btn-group">
+                    <button class="btn btn-light btn-sm px-3" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
+                    <button class="btn btn-light btn-sm px-3" title="Settings"><i class="fa-solid fa-gear"></i></button>
+                </div>
+            </div>
+
+            @if (Model.Messages.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var msg in Model.Messages)
+                    {
+                        var initial = !string.IsNullOrEmpty(msg.SenderName) ? msg.SenderName.Substring(0, 1).ToUpper() : "?";
+                        <a href="@Url.Action("Read", new { id = msg.MessageId })" class="list-group-item list-group-item-action border-bottom px-4 py-3 transition-standard @(msg.IsRead ? "" : "bg-light-primary font-weight-bold")">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div class="d-flex align-items-center" style="flex: 1; min-width: 150px;">
+                                    <div class="avatar-sm m-0 mr-3" style="width: 32px; height: 32px; font-size: 11px; background: linear-gradient(135deg, var(--primary), #6366f1); color: white;">@initial</div>
+                                    <div class="text-truncate text-dark" style="max-width: 120px;">@msg.SenderName</div>
+                                </div>
+                                <div style="flex: 2;" class="text-truncate px-3 border-left border-right mx-3 d-none d-md-block">
+                                    <span class="text-dark">@msg.Subject</span>
+                                    <span class="text-muted font-weight-normal ml-2 small">- @msg.PreviewText</span>
+                                </div>
+                                <div class="text-right ml-auto" style="flex: 0 0 120px;">
+                                    <div class="small text-muted mb-1">@msg.Timestamp.ToString("MMM dd")</div>
+                                    @if (!msg.IsRead && Model.CurrentFolder.ToLower() == "inbox") { <span class="badge badge-primary badge-pill" style="font-size: 8px;">NEW</span> }
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fa-solid @(Model.CurrentFolder.ToLower() == "sent" ? "fa-paper-plane" : Model.CurrentFolder.ToLower() == "trash" ? "fa-trash-can" : Model.CurrentFolder.ToLower() == "starred" ? "fa-star" : "fa-envelope-open") fa-4x opacity-25"></i>
+                    </div>
+                    <h4 class="h5 text-muted">No messages in @Model.CurrentFolder</h4>
+                    <p class="small text-muted">When you have @(Model.CurrentFolder.ToLower() == "sent" ? "sent" : "messages in") @Model.CurrentFolder.ToLower(), they'll appear here.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-light-primary { background-color: rgba(79, 70, 229, 0.03); }
+</style>

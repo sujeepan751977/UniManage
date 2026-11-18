@@ -1,0 +1,165 @@
+@model UniManage.Models.BatchDetailViewModel
+
+@{
+    ViewBag.Title = "Batch Student Management";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card border-0 shadow-sm p-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="btn-icon bg-soft-primary text-primary mr-3">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <h4 class="font-weight-bold mb-1">Batch: @Model.Batch.BatchName</h4>
+                    <p class="text-muted small m-0">
+                        <span class="mr-3"><i class="fa-solid fa-tag mr-1"></i> Code: @Model.Batch.BatchCode</span>
+                        <span class="mr-3"><i class="fa-solid fa-graduation-cap mr-1"></i> Course: @Model.Batch.CourseTitle</span>
+                        <span class="mr-3"><i class="fa-solid fa-chalkboard-user mr-1"></i> Lecturers: @Model.Batch.LecturerName</span>
+                        <span><i class="fa-solid fa-users mr-1"></i> Capacity: @Model.Batch.EnrolledCount / @Model.Batch.MaxCapacity</span>
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="@Url.Action("ManageBatchLecturers", "Admin", new { id = Model.Batch.BatchId })" class="btn btn-outline-primary btn-pill px-4">
+                    <i class="fa-solid fa-chalkboard-teacher mr-2"></i> Manage Lecturers
+                </a>
+                <a href="@Url.Action("ExportBatchStudents", "Admin", new { id = Model.Batch.BatchId })" class="btn btn-outline-success btn-pill px-4">
+                    <i class="fa-solid fa-file-csv mr-2"></i> Export Students
+                </a>
+                <a href="@Url.Action("Batches", "Admin")" class="btn btn-light btn-pill px-4">Back to Batches</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Assigned Students (Left) -->
+    <div class="col-lg-6 mb-4">
+        <div class="glass-card border-0 h-100 p-0 shadow-sm overflow-hidden">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-dark"><i class="fa-solid fa-user-check text-success mr-2"></i> Assigned Students (@Model.AssignedStudents.Count)</h6>
+                <div class="small text-muted font-weight-bold">
+                    @(Model.Batch.MaxCapacity - Model.Batch.EnrolledCount) Slots Remaining
+                </div>
+            </div>
+            <div class="table-responsive" style="max-height: 600px;">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light sticky-top">
+                        <tr>
+                            <th>Student</th>
+                            <th>Enrolled</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model.AssignedStudents)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="font-weight-bold">@student.StudentName</div>
+                                    <div class="small text-muted">@student.StudentEmail</div>
+                                </td>
+                                <td class="small">@student.EnrolledDate.ToShortDateString()</td>
+                                <td class="text-right">
+                                    <button type="button" class="btn btn-icon btn-soft-danger" onclick="confirmRemove(@student.BatchEnrollmentId, '@student.StudentName')">
+                                        <i class="fa-solid fa-user-minus"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.AssignedStudents.Any())
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-users fa-3x mb-3 opacity-25"></i>
+                                    <p>No students assigned to this batch yet.</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unassigned Students (Right) -->
+    <div class="col-lg-6 mb-4">
+        <div class="glass-card border-0 h-100 p-0 shadow-sm overflow-hidden">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="m-0 font-weight-bold text-dark"><i class="fa-solid fa-user-plus text-primary mr-2"></i> Available Students (@Model.UnassignedStudents.Count)</h6>
+                <p class="small text-muted m-0 mt-1">Students enrolled in this course not yet in a cohort.</p>
+            </div>
+            <div class="table-responsive" style="max-height: 600px;">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light sticky-top">
+                        <tr>
+                            <th>Student</th>
+                            <th>Enrolled</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model.UnassignedStudents)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="font-weight-bold">@student.StudentName</div>
+                                    <div class="small text-muted">@student.StudentEmail</div>
+                                </td>
+                                <td class="small">@student.EnrolledDate.ToShortDateString()</td>
+                                <td class="text-right">
+                                    @using (Html.BeginForm("AssignStudentToBatch", "Admin", FormMethod.Post, new { id = $"assignForm-{student.EnrollmentId}" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="batchId" value="@Model.Batch.BatchId" />
+                                        <input type="hidden" name="enrollmentId" value="@student.EnrollmentId" />
+                                        <button type="submit" class="btn btn-icon btn-soft-primary" @(Model.RemainingCapacity <= 0 ? "disabled" : "")>
+                                            <i class="fa-solid fa-user-plus"></i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.UnassignedStudents.Any())
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-user-graduate fa-3x mb-3 opacity-25"></i>
+                                    <p>All enrolled students have been assigned to batches.</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function confirmRemove(id, name) {
+            Swal.fire({
+                title: 'Remove Assignment?',
+                text: `Removing ${name} will put them back into the unassigned student pool for this course.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                confirmButtonText: 'Yes, remove student'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('removeBatchEnrollmentId').value = id;
+                    document.getElementById('removeStudentForm').submit();
+                }
+            });
+        }
+    </script>
+}
+
+@using (Html.BeginForm("RemoveStudentFromBatch", "Admin", FormMethod.Post, new { id = "removeStudentForm" }))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="batchEnrollmentId" id="removeBatchEnrollmentId" />
+}

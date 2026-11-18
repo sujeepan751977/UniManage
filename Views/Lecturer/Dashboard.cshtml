@@ -1,0 +1,176 @@
+@model UniManage.ViewModels.Lecturer.LecturerDashboardViewModel
+@{
+    ViewBag.Title = "Lecturer Dashboard";
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card-custom stat-card">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="stat-icon" style="background-color: #E0E7FF; color: #4338CA;"><i class="fa-solid fa-users"></i></div>
+                <div class="text-right">
+                    <div class="stat-label">Total Students</div>
+                    <div class="stat-value">@Model.TotalStudents</div>
+                </div>
+            </div>
+            <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-up"></i> 8% growth</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom stat-card">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="stat-icon" style="background-color: #FEF3C7; color: #D97706;"><i class="fa-solid fa-file-signature"></i></div>
+                <div class="text-right">
+                    <div class="stat-label">Pending Grading</div>
+                    <div class="stat-value">@Model.PendingGrading</div>
+                </div>
+            </div>
+            <div class="stat-trend trend-down text-warning">Needs attention</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+            <a href="@Url.Action("Inbox", "Messages")" class="text-decoration-none h-100">
+                <div class="card-custom stat-card h-100">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="stat-icon" style="background-color: #D1FAE5; color: #059669;"><i class="fa-solid fa-envelope"></i></div>
+                        <div class="text-right">
+                            <div class="stat-label">New Messages</div>
+                            <div class="stat-value">@Model.UnreadMessages</div>
+                        </div>
+                    </div>
+                    <div class="stat-trend trend-up">Check inbox</div>
+                </div>
+            </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-custom py-3 px-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-bolt-lightning text-primary mr-3 h4 mb-0"></i>
+                <div>
+                    <h6 class="font-weight-bold mb-0">Quick Access</h6>
+                    <p class="small text-muted mb-0">New tools for cohort & content management</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="@Url.Action("SearchStudents", "Lecturer")" class="btn btn-outline-primary btn-pill btn-sm px-4">
+                    <i class="fa-solid fa-users-rectangle mr-2"></i> Search Students
+                </a>
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-pill btn-sm px-4 dropdown-toggle" type="button" id="manageReleasesDrop" data-toggle="dropdown">
+                        <i class="fa-solid fa-bullhorn mr-2"></i> Manage Releases
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right shadow border-0">
+                        @foreach (var module in Model.TeachingModules.GroupBy(m => m.CourseId).Select(g => g.First()))
+                        {
+                            <a class="dropdown-item" href="@Url.Action("ManageReleases", new { id = module.CourseId })">
+                                <span class="small font-weight-bold">@module.CourseCode</span>: @module.Title
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <h3 class="h4 mb-0">My Teaching Modules</h3>
+                <a href="@Url.Action("MyCourses")" class="small font-weight-bold text-primary">Manage All</a>
+            </div>
+            <div class="table-custom-wrapper">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Module</th>
+                            <th>Enrolled</th>
+                            <th>Cohorts</th>
+                            <th>Materials</th>
+                            <th>Assignments</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var module in Model.TeachingModules)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="font-weight-bold text-dark">@module.Title</div>
+                                    <div class="small text-muted">@module.ModuleCode (@module.CourseCode)</div>
+                                </td>
+                                <td><span class="badge badge-soft-primary border">@module.EnrolledCount Students</span></td>
+                                <td>
+                                    @if (module.BatchCount > 0)
+                                    {
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach (var code in module.BatchCodes)
+                                            {
+                                                <span class="badge badge-pill badge-light border text-primary" style="font-size: 10px;">@code</span>
+                                            }
+                                        </div>
+                                        <div class="small text-muted mt-1" style="font-size: 10px;">@module.BatchCount Active Batch(es)</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="small text-muted italic">No active batches</span>
+                                    }
+                                </td>
+                                <td><span class="small">@module.MaterialCount Files</span></td>
+                                <td><span class="small">@module.AssignmentCount Tasks</span></td>
+                                <td class="text-right">
+                                    <div class="btn-group">
+                                        <a href="@Url.Action("ManageReleases", new { id = module.CourseId })" class="btn btn-icon btn-soft-info" title="Manage Releases">
+                                            <i class="fa-solid fa-bullhorn"></i>
+                                        </a>
+                                        <a href="@Url.Action("Materials", new { id = module.ModuleId })" class="btn btn-icon btn-soft-primary" title="Materials"><i class="fa-solid fa-folder-open"></i></a>
+                                        <a href="@Url.Action("Assignments", new { id = module.ModuleId })" class="btn btn-icon btn-soft-info" title="Assignments"><i class="fa-solid fa-tasks"></i></a>
+                                        <a href="@Url.Action("CourseStudents", new { id = module.CourseId })" class="btn btn-icon btn-soft-success" title="Students"><i class="fa-solid fa-users"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <h3 class="h4 mb-0">Recent Submissions</h3>
+            </div>
+            @if (Model.RecentSubmissions.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var sub in Model.RecentSubmissions)
+                    {
+                        <div class="list-group-item px-0 py-3 border-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="font-weight-bold small text-dark">@sub.StudentName</span>
+                                <span class="small text-muted">@sub.SubmittedAt.ToString("MMM dd")</span>
+                            </div>
+                            <div class="small text-muted mb-2">@sub.AssignmentTitle (@sub.CourseCode)</div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                @if (sub.IsLate)
+                                {
+                                    <span class="badge badge-pill status-danger" style="font-size: 10px;">LATE</span>
+                                }
+                                <a href="@Url.Action("GradeSubmission", new { id = sub.SubmissionId })" class="btn btn-primary btn-sm px-3" style="font-size: 11px;">Grade</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted small text-center py-4">All caught up! No pending submissions.</p>
+            }
+        </div>
+    </div>
+</div>

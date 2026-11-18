@@ -1,0 +1,77 @@
+@model UniManage.Models.ReleaseMaterialViewModel
+
+@{
+    ViewBag.Title = "Release Material";
+}
+
+<div class="row mb-5">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="glass-card border-0 shadow-lg p-0 overflow-hidden">
+            <div class="bg-info p-4 text-white">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="btn-icon bg-white text-info mr-3 shadow-sm">
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </div>
+                    <h4 class="font-weight-bold m-0 text-white">Release Material: @Model.Title</h4>
+                </div>
+                <p class="m-0 opacity-75 small">
+                    <i class="fa-solid fa-graduation-cap mr-1"></i> Course: @Model.CourseTitle
+                </p>
+            </div>
+
+            @using (Html.BeginForm("ReleaseMaterial", "Lecturer", FormMethod.Post, new { @class = "p-4" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.MaterialId)
+
+                <h6 class="font-weight-bold mb-4 text-dark border-bottom pb-2">Select Target Cohorts</h6>
+
+                <div class="row">
+                    @foreach (var batch in Model.BatchOptions)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <label class="batch-selection-card d-block p-3 border rounded shadow-sm cursor-pointer @(batch.IsAlreadyReleased ? "bg-light border-info" : "")" for="batch_@batch.BatchId">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" 
+                                           id="batch_@batch.BatchId" 
+                                           name="SelectedBatchIds" 
+                                           value="@batch.BatchId"
+                                           @(batch.IsAlreadyReleased ? "checked disabled" : "")>
+                                    <span class="custom-control-label h6 font-weight-bold">@batch.BatchCode</span>
+                                </div>
+                                <div class="pl-4 mt-1 small text-muted">
+                                    @batch.BatchName
+                                    @if (batch.IsAlreadyReleased)
+                                    {
+                                        <span class="text-info font-weight-bold d-block mt-1"><i class="fa-solid fa-check-circle mr-1"></i> Already Released</span>
+                                    }
+                                </div>
+                            </label>
+                        </div>
+                    }
+                </div>
+
+                <div class="alert alert-soft-info mt-4 py-3 px-4 border-0 rounded">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-circle-info mr-3"></i>
+                        <p class="m-0 small">Materials released to a batch become immediately downloadable by all students enrolled in that specific cohort. Unreleased materials remain hidden.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="@Url.Action("ManageReleases", "Lecturer", new { id = Context.Request.QueryString["courseId"] })" class="btn btn-light btn-pill px-4">Cancel</a>
+                    <button type="submit" class="btn btn-info btn-pill px-5 shadow text-white font-weight-bold">
+                        <i class="fa-solid fa-check-circle mr-2"></i> Confirm Release
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .batch-selection-card { transition: all 0.2s ease; border: 1px solid #e2e8f0; cursor: pointer; }
+    .batch-selection-card:hover:not(.bg-light) { border-color: var(--info); transform: translateY(-2px); }
+    .btn-pill { border-radius: 50px; }
+    .cursor-pointer { cursor: pointer; }
+</style>

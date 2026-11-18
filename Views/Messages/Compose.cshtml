@@ -1,0 +1,64 @@
+@model UniManage.ViewModels.Messaging.ComposeMessageViewModel
+@{
+    ViewBag.Title = "New Message";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-custom">
+            <div class="card-header-custom border-0 mb-4 pb-0">
+                <h3 class="h4 mb-0">Compose New Message</h3>
+            </div>
+
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-group mb-4">
+                    <label class="font-weight-bold">To</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white border-right-0"><i class="fa-solid fa-user text-muted"></i></span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.ReceiverName))
+                        {
+                            <input type="text" class="form-control border-left-0 font-weight-bold" value="@Model.ReceiverName" readonly />
+                            @Html.HiddenFor(m => m.ReceiverId)
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(m => m.ReceiverId, new { @class = "form-control border-left-0", placeholder = "Recipient Email or ID" })
+                        }
+                    </div>
+                    @Html.ValidationMessageFor(m => m.ReceiverId, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="font-weight-bold">Subject</label>
+                    @Html.TextBoxFor(m => m.Subject, new { @class = "form-control", placeholder = "What is this about?" })
+                    @Html.ValidationMessageFor(m => m.Subject, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="font-weight-bold">Message Content</label>
+                    @Html.TextAreaFor(m => m.Content, new { @class = "form-control", rows = 8, placeholder = "Type your message here..." })
+                    @Html.ValidationMessageFor(m => m.Content, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="form-group mb-4">
+                    <div class="p-3 bg-light rounded border-dashed small text-muted">
+                        <i class="fa-solid fa-paperclip mr-2"></i> Attachments are currently disabled. Use course materials for file sharing.
+                    </div>
+                </div>
+
+                <div class="border-top pt-4 d-flex justify-content-between">
+                    <a href="@Url.Action("Inbox")" class="btn btn-light transition-standard"><i class="fa-solid fa-arrow-left mr-2 text-muted"></i> Discard</a>
+                    <button type="submit" class="btn btn-primary px-5 transition-standard">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Send Message
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

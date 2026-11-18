@@ -1,0 +1,108 @@
+@{
+    ViewBag.Title = "UniManage | Professional Course Management";
+    if (!User.Identity.IsAuthenticated)
+    {
+        ViewBag.HideSidebar = true;
+    }
+}
+
+<!-- Hero Section -->
+<div class="hero-gradient text-white">
+    <div class="container text-center">
+        <h1 class="display-3 font-weight-bold mb-4 hero-animate-up" style="letter-spacing: -2px;">Institutional Excellence in Course Management</h1>
+        <p class="lead mb-5 mx-auto hero-animate-up" style="max-width: 800px; font-size: 1.35rem; opacity: 0.9; animation-delay: 0.1s; line-height: 1.6;">
+            A reliable, scalable platform designed for modern academic institutions. 
+            Streamline learning, teaching, and administration in one secure, professional environment.
+        </p>
+        
+        <div class="d-flex justify-content-center gap-3 flex-wrap mt-4 hero-animate-up" style="animation-delay: 0.2s;">
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a href="@Url.Action("Login", "Account")" class="btn btn-primary-premium btn-premium shadow-lg">
+                    Access Portal <i class="fa-solid fa-arrow-right ml-2"></i>
+                </a>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-outline-premium btn-premium">
+                    Student Registration
+                </a>
+            }
+            else
+            {
+                <a href="@Url.Action("Dashboard", User.IsInRole("Administrator") ? "Admin" : User.IsInRole("Lecturer") ? "Lecturer" : "Student")" class="btn btn-primary-premium btn-premium shadow-lg">
+                    Go to Dashboard <i class="fa-solid fa-gauge-high ml-2"></i>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="landing-section bg-light" id="features">
+    <div class="container">
+        <div class="text-center mb-5 pb-5 hero-animate-up">
+            <h2 class="display-4 font-weight-bold mb-3" style="color: #0F172A; letter-spacing: -1px;">Enterprise Solutions</h2>
+            <p class="text-muted lead mx-auto" style="max-width: 700px;">UniManage provides robust functionality designed to meet the rigorous standards of modern higher education.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-5 hero-animate-up" style="animation-delay: 0.1s;">
+                <div class="glass-card h-100">
+                    <div class="icon-box-premium">
+                        <i class="fa-solid fa-landmark"></i>
+                    </div>
+                    <h3 class="h4 mb-3 font-weight-bold">Academic Registry</h3>
+                    <p class="text-muted mb-0">Centralized management of course catalogs, student enrollments, and prerequisite logic with real-time validation.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-5 hero-animate-up" style="animation-delay: 0.2s;">
+                <div class="glass-card h-100">
+                    <div class="icon-box-premium" style="background: linear-gradient(135deg, #0EA5E9 0%, #2DD4BF 100%);">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="h4 mb-3 font-weight-bold">Teaching Tools</h3>
+                    <p class="text-muted mb-0">Advanced resource distribution and assignment management workflows for faculty, including secure digital submissions.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-5 hero-animate-up" style="animation-delay: 0.3s;">
+                <div class="glass-card h-100">
+                    <div class="icon-box-premium" style="background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <h3 class="h4 mb-3 font-weight-bold">Oversight</h3>
+                    <p class="text-muted mb-0">Comprehensive analytics and audit logs ensuring transparency and security across all institutional departments.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <div class="row text-center hero-animate-up">
+            <div class="col-md-4 py-4" style="border-right: 1px solid rgba(0,0,0,0.05);">
+                <div class="h2 font-weight-bold text-primary mb-1">Standardized</div>
+                <div class="text-muted small font-weight-bold text-uppercase" style="letter-spacing: 1px;">MVC Architecture</div>
+            </div>
+            <div class="col-md-4 py-4" style="border-right: 1px solid rgba(0,0,0,0.05);">
+                <div class="h2 font-weight-bold text-primary mb-1">Persistent</div>
+                <div class="text-muted small font-weight-bold text-uppercase" style="letter-spacing: 1px;">Data Integrity</div>
+            </div>
+            <div class="col-md-4 py-4">
+                <div class="h2 font-weight-bold text-primary mb-1">Scalable</div>
+                <div class="text-muted small font-weight-bold text-uppercase" style="letter-spacing: 1px;">Enterprise Ready</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action Section -->
+<div class="container mb-5 py-5 px-lg-5" id="about">
+    <div class="cta-section text-center hero-animate-up">
+        <h2 class="display-4 font-weight-bold mb-4" style="letter-spacing: -1.5px;">Ready to Modernize Your Institution?</h2>
+        <p class="lead mb-5 mx-auto" style="max-width: 700px; opacity: 0.8;">Join the next generation of academic management with a platform built for reliability and efficiency.</p>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+             <a href="@Url.Action("Login", "Account")" class="btn btn-primary-premium btn-premium px-5">Access Portal</a>
+             <a href="@Url.Action("Register", "Account")" class="btn btn-outline-premium btn-premium px-5">Register Student</a>
+        </div>
+    </div>
+</div>

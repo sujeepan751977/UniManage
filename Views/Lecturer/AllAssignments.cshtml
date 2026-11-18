@@ -1,0 +1,64 @@
+@model IEnumerable<UniManage.Models.Assignment>
+@{
+    ViewBag.Title = "Global Assignment Management";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="h4 mb-0">Unified Assignment List</h3>
+    <a href="@Url.Action("MyCourses")" class="btn btn-outline-primary btn-sm">
+        <i class="fa-solid fa-plus mr-2"></i> Create New (Select Course)
+    </a>
+</div>
+
+<div class="card-custom border-0 shadow-sm mb-4">
+    <div class="table-custom-wrapper">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Assignment Title</th>
+                    <th>Deadline</th>
+                    <th>Submissions</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var a in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge badge-primary-light text-primary border-primary small">@a.Module.Course.CourseCode</span>
+                            </td>
+                            <td>
+                                <div class="font-weight-bold">@a.Title</div>
+                                <div class="small text-muted text-truncate" style="max-width: 250px;">@a.Description</div>
+                            </td>
+                            <td>
+                                <div class="small @(a.Deadline < DateTime.Now ? "text-danger font-weight-bold" : "text-dark")">
+                                    <i class="fa-solid fa-calendar-day mr-1"></i> @a.Deadline.ToString("MMM dd, yyyy")
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-light border">@a.Submissions.Count Submissions</span>
+                            </td>
+                            <td class="text-right">
+                                <a href="@Url.Action("Assignments", new { id = a.ModuleId })" class="btn btn-light btn-sm" title="View Module Context"><i class="fa-solid fa-eye text-primary"></i></a>
+                                <a href="@Url.Action("Submissions", new { id = a.AssignmentId })" class="btn btn-light btn-sm" title="Manage Submissions"><i class="fa-solid fa-check-to-slot text-success"></i></a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            @Html.Partial("_EmptyState", new { Heading = "No assignments found", Subtext = "You haven't created any assignments for your courses yet." })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
